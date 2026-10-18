@@ -1,4 +1,6 @@
-# CSV 빠른 검색기
+# Needle
+
+**Find the rows you need in huge CSV files.**
 
 몇 GB짜리 CSV를 SQLite 또는 DuckDB로 가져와서 빠르게 검색하고, 필요한 줄만 CSV로 저장하는 프로그램입니다.
 
@@ -6,7 +8,7 @@
 
 1. Python 3.10 이상을 설치합니다 (설치할 때 "Add Python to PATH" 체크). 이건 exe를 **만드는 PC에서만** 필요합니다.
 2. 이 폴더에서 `build.bat`을 더블클릭합니다.
-3. 1~3분 뒤 `dist\CsvFastSearch.exe`가 생깁니다. 이 파일 하나만 다른 PC에 복사해서 쓰면 됩니다 (설치 불필요).
+3. 1~3분 뒤 `dist\Needle.exe`가 생깁니다. 이 파일 하나만 다른 PC에 복사해서 쓰면 됩니다 (설치 불필요).
 
 Python 설치가 번거로우면 이 폴더를 GitHub 저장소에 올리세요. `.github/workflows/build-windows.yml` 덕분에
 Actions 탭에서 exe가 자동으로 만들어집니다.
@@ -58,7 +60,7 @@ AND가 OR보다 먼저 계산됩니다 (`a OR b AND c` = `a OR (b AND c)`). AND 
 
 - **History…** 창: 필터로 찾고, 더블클릭하면 다시 검색합니다. 다른 DB에서 한 검색이면 그 DB를 열어서 실행합니다.
 - 검색창에서 **↑ / ↓** 키: 현재 DB의 이전 검색을 차례로 불러옵니다.
-- 저장 위치: `%APPDATA%\CsvFastSearch\history.json`
+- 저장 위치: `%APPDATA%\Needle\history.json` (이전 이름일 때의 기록은 자동으로 옮겨집니다)
 
 ## 엔진 고르는 기준
 

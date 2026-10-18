@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CSV Fast Search - core logic (no UI)
+Needle - core logic (no UI)
 
 - Detects CSV encoding and delimiter
 - Recommends an engine (SQLite / DuckDB) from file size and intended use
@@ -428,8 +428,17 @@ def app_data_dir():
         base = os.environ.get("APPDATA") or os.path.expanduser("~")
     else:
         base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
-    d = os.path.join(base, "CsvFastSearch")
+    d = os.path.join(base, "Needle")
     os.makedirs(d, exist_ok=True)
+    # carry over history from the earlier "CSV Fast Search" name
+    old = os.path.join(base, "CsvFastSearch", "history.json")
+    new = os.path.join(d, "history.json")
+    if os.path.exists(old) and not os.path.exists(new):
+        try:
+            import shutil
+            shutil.copyfile(old, new)
+        except OSError:
+            pass
     return d
 
 
@@ -525,7 +534,7 @@ class BaseEngine:
         try:
             rows = self.con.execute("SELECT k, v FROM _csvtool_meta").fetchall()
         except Exception:
-            raise ValueError("This database was not created by CSV Fast Search.")
+            raise ValueError("This database was not created by Needle.")
         self.meta = dict(rows)
         self.headers = json.loads(self.meta["headers"])
         self.row_count = int(self.meta.get("rows", 0) or 0)

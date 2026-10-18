@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-CSV Fast Search - user interface
+Needle - find the rows you need in huge CSV files.
 
 Imports large CSV files into SQLite or DuckDB, searches them quickly,
 and saves only the rows you need.
@@ -17,7 +17,9 @@ from tkinter import filedialog, messagebox, ttk
 
 import csv_search_core as core
 
-APP_NAME = "CSV Fast Search"
+APP_NAME = "Needle"
+APP_TAGLINE = "Find the rows you need in huge CSV files"
+APP_ID = "Needle.CsvSearch"
 PAGE_SIZE = 500
 CELL_MAX = 300
 
@@ -30,6 +32,102 @@ EXPORT_ENCODINGS = {"UTF-8 (Excel-friendly)": "utf-8-sig", "UTF-8": "utf-8", "CP
 CSV_TYPES = [("CSV files", "*.csv *.tsv *.txt"), ("All files", "*.*")]
 DB_TYPES = [("Search databases", "*.sqlite *.db *.duckdb"), ("All files", "*.*")]
 BLUE, RED, GREY = "#1f5f8b", "#b00020", "#555555"
+INK = "#12324A"
+
+# Needle icon (PNG, base64) so the exe needs no separate image files
+ICON_64 = (
+    "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"
+)
+
+ICON_32 = (
+    "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"
+)
+
+ICON_22 = (
+    "iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAD2ElEQVR42pWVXYiUZRTHf+d53pnZmd3ZdfbDFWvVitTVsJLScCET"
+    "CTYNg4zSiy5aClTI0iwIybX0Ktjo07qIJcxSzCLDRaMMhKz1g9IMszYp8qL82Nb9mp15P57TxTrrLK42nqsX3off+Z//c/g/wnAJ"
+    "oAA185akNUuD2sACqFNhjBIjCiA2FonHme7vvugvZknho37W/eVBLN4K8iiqE1C1l/5fo0QRiRDOouySMrvxUgMRaDV1M06mwmT2"
+    "K+vF79EwQNVRSokM91XAeHFc4B/Fixb+e3jugIUDWnbj5M02VvaY8/N5UFs00lWAYI0QhCGAGhFcGPg2npjkApfK/fP+XqmZtyTt"
+    "cuEpETOBYaXm2iohFxr8fJ6G+koGhwIGslnKEgmngKpecFFsmucG85PE2Dpw5n9HB4LI0FiXJVN7AytXvIDmuln9yhsMZoeMtRbQ"
+    "2jjBFKNGLKgpxVNrhcFcwPSGNPvWGL7/cgtTbprK5InjyQcBw5aLqGdMScDCRQWhoyopNNz5OC/uqeXVllv4cMc2Oo//RjqVxDkd"
+    "OX9d4KFcnpZlD7P+qcXct3gVr+0+x/zUp5Qly4nc6E0q0QJLb/8ASx9YyMZnnuDk73+xfvMmnnurk7qacSyZFdCbBWuuA+xZy8W+"
+    "fu6dO5stm9ax/9vDPNiyjq4/z2DLx/HJEWXRbY4wklH7aUpROvPWm9na1sr23XtZvvolcr5PeSqJIeSPbkN1uRLzFFcK2BrDYDbL"
+    "xPo6PmjbwJatO1nxfBviJUnEPaLIETmhtkIZ8uUKxd5YUGOEXN4nXVHB6xvW8Gb7x7Rv7WDN0kou9EfsOGKorQAXQfNMx8HTV+oz"
+    "Y69VRDwe49mWZby7bRft2zuYMb2aJ5t8fvlbSJdB9yAsaIxonOD46JClKqUUbduVilUVI8LCprvZuedrTvzaRaauBucC8gGcPi/0"
+    "9AmZSuWd5QEb98ToyQqZciUqMtkTax2RjvSKnKMmU0Xnjz9zvruHTFUluJCuc4YDXYbdq3ze+8ZjbXPA58csO49axqeV8DJUxTgn"
+    "1XOaKzUwp8SY+kIIOVVQxbMWd7kn+RBWzo9omhqx7ydL+0FLVZKCBYqIotodBTJNAKpnL2ozscRa5+fzCPFLIYaOEUI9WXAqWKNk"
+    "UkVQxTfxRCIKht7u+WHf0wKtpnrOoQoN7X4bi9/lQh9Ur77bRdc94qlIIeiPRZG3oPf4HX0jT1P1nOZKjczLYB4R5+oR7LXCvuAn"
+    "4ETMWVQ/C6OBDb3HD1wsTDzqMa26/aFxYtwkz6hXSo6ETkIN3ZneEx09xaz/AKicr3SiE/aNAAAAAElFTkSuQmCC"
+)
+
 
 QUERY_HELP = """\
 Query syntax
@@ -365,6 +463,7 @@ class App(tk.Tk):
         self.geometry("1240x780")
         self.minsize(940, 580)
         self._setup_fonts()
+        self._setup_icon()
 
         self.engine = None
         self.job = None
@@ -406,16 +505,30 @@ class App(tk.Tk):
         style.configure("Treeview.Heading", font=(data, 10, "bold"))
         style.configure("Accent.TButton", font=(ui, 10, "bold"))
 
+    def _setup_icon(self):
+        try:
+            self.icons = {s: tk.PhotoImage(data="".join(globals()[f"ICON_{s}"])) for s in (64, 32, 22)}
+            self.iconphoto(True, self.icons[64], self.icons[32])  # also used by every child window
+        except tk.TclError:
+            self.icons = {}
+
     def _build(self):
         bar = ttk.Frame(self, padding=(10, 8, 10, 4))
         bar.pack(fill="x")
+        brand = ttk.Frame(bar)
+        brand.pack(side="left", padx=(0, 14))
+        if self.icons:
+            ttk.Label(brand, image=self.icons[22]).pack(side="left", padx=(0, 6))
+        ttk.Label(brand, text=APP_NAME, font=(self.font_title[0], 13, "bold"),
+                  foreground=INK).pack(side="left")
+        ttk.Separator(bar, orient="vertical").pack(side="left", fill="y", padx=(0, 12))
         self.btn_import = ttk.Button(bar, text="Import CSV…", command=self.open_csv)
         self.btn_import.pack(side="left")
         self.btn_open = ttk.Button(bar, text="Open database…", command=self.open_db)
         self.btn_open.pack(side="left", padx=6)
         self.btn_history = ttk.Button(bar, text="History…", command=self.show_history)
         self.btn_history.pack(side="left")
-        self.info_lbl = ttk.Label(bar, text="Import a CSV file, or open a database you created earlier.",
+        self.info_lbl = ttk.Label(bar, text=f"{APP_TAGLINE}. Import a CSV or open a database to start.",
                                   foreground=GREY, font=self.font_data)
         self.info_lbl.pack(side="left", padx=12)
 
@@ -1000,9 +1113,13 @@ class App(tk.Tk):
 
 def main():
     if sys.platform.startswith("win"):
+        import ctypes
         try:  # keeps text sharp on high-DPI screens
-            import ctypes
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            pass
+        try:  # shows the Needle icon on the taskbar instead of Python's
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(APP_ID)
         except Exception:
             pass
     app = App()
