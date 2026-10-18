@@ -1,0 +1,17 @@
+# GitHub에 올리면 Windows용 exe를 자동으로 만들어 줍니다 (Actions 탭 → 실행 결과의 Artifacts).
+name: build-windows-exe
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - run: python -m PyInstaller --noconfirm --onefile --windowed --name CsvFastSearch --exclude-module numpy --exclude-module pandas --exclude-module pyarrow --exclude-module matplotlib --exclude-module scipy --exclude-module IPython --exclude-module PIL --exclude-module polars csv_search.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CsvFastSearch
+          path: dist/CsvFastSearch.exe
